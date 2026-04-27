@@ -1,0 +1,10 @@
+.build/
+.swiftpm/
+*.xcodeproj/
+DerivedData/
+*.app/
+
+# Do not commit screenshots or large binaries
+*.png
+*.jpg
+*.jpeg

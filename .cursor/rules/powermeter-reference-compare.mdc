@@ -1,0 +1,16 @@
+---
+description: Запуск сравнения Powermeter с референсом в трее по запросу пользователя
+---
+
+Когда пользователь просит **прогнать сравнение с референсной программой**, **тест трея**, **compare tray**, или аналогично:
+
+1. Убедись, что Powermeter собран и запущен (при необходимости `bash scripts/run-powermeter.sh`).
+2. Выполни:
+
+```bash
+bash scripts/test-tray-vs-reference.sh
+```
+
+По умолчанию **60 с** выборки, скриншот **каждые 5 с**, результат в `/tmp/powermeter-compare/run_<timestamp>/` (`SUMMARY.txt`, `shot_*.png`, таймлайн лога).
+
+Для короткой проверки: `COMPARE_DURATION=10 COMPARE_SHOT_INTERVAL=2 bash scripts/test-tray-vs-reference.sh`

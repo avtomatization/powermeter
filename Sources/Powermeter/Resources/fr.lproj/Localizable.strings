@@ -1,0 +1,36 @@
+"menu.help_detail" = "Puissance système en direct via SMC (PSTR), avec repli batterie U·I.";
+"menu.settings" = "Réglages";
+"menu.language" = "Langue";
+"menu.refresh_interval" = "Intervalle d’actualisation";
+"menu.precision" = "Précision";
+"menu.quit" = "Quitter";
+
+"settings.interval.s1" = "1 s";
+"settings.interval.s2" = "2 s";
+"settings.interval.s5" = "5 s";
+"settings.interval.s10" = "10 s";
+
+"settings.precision.low" = "Faible";
+"settings.precision.medium" = "Moyenne";
+"settings.precision.high" = "Élevée";
+
+"language.en" = "Anglais";
+"language.ru" = "Russe";
+"language.zh_hans" = "Chinois (simplifié)";
+"language.fr" = "Français";
+"language.es" = "Espagnol";
+"language.de" = "Allemand";
+
+"errors.no_iops" = "Pas de données IOPS";
+"errors.no_sources" = "Aucune source d’alimentation";
+"errors.zero_current" = "Courant ≈0 (secteur / charge complète)";
+"errors.battery_not_found" = "Batterie introuvable";
+"errors.sample_timeout" = "Lecture alimentation expirée (nouvel essai)";
+
+"battery.charging" = "Batterie · charge";
+"battery.ac" = "Batterie · secteur";
+"battery.discharging" = "Batterie · décharge";
+
+"display.no_value" = "— W";
+"unit.watts" = "W";
+"a11y.power" = "Puissance en watts";

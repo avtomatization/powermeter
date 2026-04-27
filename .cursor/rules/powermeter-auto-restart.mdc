@@ -1,0 +1,17 @@
+---
+description: После изменений кода Powermeter перезапускать приложение без запроса пользователя
+globs: Sources/**/*.swift, Package.swift
+alwaysApply: false
+---
+
+# Автоперезапуск Powermeter
+
+После любых правок в `Sources/**/*.swift` или `Package.swift`, которые влияют на сборку или поведение приложения, **самостоятельно** выполни перезапуск:
+
+```bash
+bash scripts/run-powermeter.sh
+```
+
+Не проси пользователя запускать это вручную. Если скрипта нет — эквивалент: `pkill -x Powermeter || true`, затем `swift build -c release`, затем `nohup .build/release/Powermeter >> /tmp/powermeter.log 2>&1 &`.
+
+Лог: `/tmp/powermeter.log`.

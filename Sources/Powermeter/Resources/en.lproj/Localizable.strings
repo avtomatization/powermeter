@@ -1,0 +1,36 @@
+"menu.help_detail" = "Live system power from SMC (PSTR), with battery U·I fallback.";
+"menu.settings" = "Settings";
+"menu.language" = "Language";
+"menu.refresh_interval" = "Refresh interval";
+"menu.precision" = "Precision";
+"menu.quit" = "Quit";
+
+"settings.interval.s1" = "1 s";
+"settings.interval.s2" = "2 s";
+"settings.interval.s5" = "5 s";
+"settings.interval.s10" = "10 s";
+
+"settings.precision.low" = "Low";
+"settings.precision.medium" = "Medium";
+"settings.precision.high" = "High";
+
+"language.en" = "English";
+"language.ru" = "Russian";
+"language.zh_hans" = "Chinese (Simplified)";
+"language.fr" = "French";
+"language.es" = "Spanish";
+"language.de" = "German";
+
+"errors.no_iops" = "No IOPS data";
+"errors.no_sources" = "No power sources";
+"errors.zero_current" = "Current ≈0 (AC / full charge)";
+"errors.battery_not_found" = "Battery not found";
+"errors.sample_timeout" = "Power read timed out (retrying)";
+
+"battery.charging" = "Battery · charging";
+"battery.ac" = "Battery · AC";
+"battery.discharging" = "Battery · discharging";
+
+"display.no_value" = "— W";
+"unit.watts" = "W";
+"a11y.power" = "Power in watts";

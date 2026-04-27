@@ -1,0 +1,36 @@
+"menu.help_detail" = "Живая системная мощность из SMC (PSTR), запасной расчёт — U·I батареи.";
+"menu.settings" = "Настройки";
+"menu.language" = "Язык";
+"menu.refresh_interval" = "Частота обновления";
+"menu.precision" = "Точность";
+"menu.quit" = "Выход";
+
+"settings.interval.s1" = "1 с";
+"settings.interval.s2" = "2 с";
+"settings.interval.s5" = "5 с";
+"settings.interval.s10" = "10 с";
+
+"settings.precision.low" = "Низкая";
+"settings.precision.medium" = "Средняя";
+"settings.precision.high" = "Высокая";
+
+"language.en" = "Английский";
+"language.ru" = "Русский";
+"language.zh_hans" = "Китайский (упрощ.)";
+"language.fr" = "Французский";
+"language.es" = "Испанский";
+"language.de" = "Немецкий";
+
+"errors.no_iops" = "Нет данных IOPS";
+"errors.no_sources" = "Нет источников питания";
+"errors.zero_current" = "Ток ≈0 (AC / полный заряд)";
+"errors.battery_not_found" = "Батарея не найдена";
+"errors.sample_timeout" = "Таймаут чтения питания (повтор)";
+
+"battery.charging" = "Батарея · заряд";
+"battery.ac" = "Батарея · AC";
+"battery.discharging" = "Батарея · разряд";
+
+"display.no_value" = "— Вт";
+"unit.watts" = "Вт";
+"a11y.power" = "Потребление, ватты";

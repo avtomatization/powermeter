@@ -1,0 +1,36 @@
+"menu.help_detail" = "Live-Systemleistung aus SMC (PSTR), mit Batterie-U·I als Fallback.";
+"menu.settings" = "Einstellungen";
+"menu.language" = "Sprache";
+"menu.refresh_interval" = "Aktualisierungsintervall";
+"menu.precision" = "Genauigkeit";
+"menu.quit" = "Beenden";
+
+"settings.interval.s1" = "1 s";
+"settings.interval.s2" = "2 s";
+"settings.interval.s5" = "5 s";
+"settings.interval.s10" = "10 s";
+
+"settings.precision.low" = "Niedrig";
+"settings.precision.medium" = "Mittel";
+"settings.precision.high" = "Hoch";
+
+"language.en" = "Englisch";
+"language.ru" = "Russisch";
+"language.zh_hans" = "Chinesisch (vereinfacht)";
+"language.fr" = "Französisch";
+"language.es" = "Spanisch";
+"language.de" = "Deutsch";
+
+"errors.no_iops" = "Keine IOPS-Daten";
+"errors.no_sources" = "Keine Stromquellen";
+"errors.zero_current" = "Strom ≈0 (AC / voll geladen)";
+"errors.battery_not_found" = "Akku nicht gefunden";
+"errors.sample_timeout" = "Strommessung Zeitüberschreitung (erneut)";
+
+"battery.charging" = "Akku · Laden";
+"battery.ac" = "Akku · AC";
+"battery.discharging" = "Akku · Entladen";
+
+"display.no_value" = "— W";
+"unit.watts" = "W";
+"a11y.power" = "Leistung in Watt";
