@@ -13,10 +13,13 @@ class Powermeter < Formula
   def install
     system "swift", "build", "-c", "release", "--disable-sandbox"
     bin.install ".build/release/Powermeter"
+    # SwiftPM embeds resources (Localizable.strings) in this bundle next to the executable.
+    bin.install ".build/release/Powermeter_Powermeter.bundle"
   end
 
   test do
     assert_predicate bin/"Powermeter", :executable?
+    assert_predicate bin/"Powermeter_Powermeter.bundle", :directory?
   end
 
   def caveats

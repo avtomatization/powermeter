@@ -21,10 +21,12 @@ echo "1/4 Building release binary..."
 cd "$ROOT"
 swift build -c release
 
-echo "2/4 Installing binary to $BIN"
+echo "2/4 Installing binary and SwiftPM resource bundle to $BIN_DIR"
 mkdir -p "$BIN_DIR" "$LOG_DIR" "$HOME/Library/LaunchAgents"
 cp "$ROOT/.build/release/Powermeter" "$BIN"
 chmod +x "$BIN"
+rm -rf "$BIN_DIR/Powermeter_Powermeter.bundle"
+cp -R "$ROOT/.build/release/Powermeter_Powermeter.bundle" "$BIN_DIR/"
 
 echo "3/4 Creating LaunchAgent..."
 cat > "$PLIST" <<EOF

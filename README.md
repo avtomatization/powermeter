@@ -58,7 +58,7 @@ Powermeter
 ```
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
-- The binary is installed as **`$(brew --prefix)/bin/Powermeter`** (Apple Silicon: usually `/opt/homebrew/bin/Powermeter`; Intel Homebrew: often `/usr/local/bin/Powermeter`).
+- The binary is installed as **`$(brew --prefix)/bin/Powermeter`**, with **`Powermeter_Powermeter.bundle`** next to it (SwiftPM resources / localizations). Both are required to run.
 
 **Run after install:** Homebrew does not start the app for you. Powermeter is a **menu bar only** app (no Dock icon). Start it once:
 
