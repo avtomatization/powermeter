@@ -68,6 +68,30 @@ brew uninstall powermeter
 brew untap avtomatization/powermeter
 ```
 
+### Canonical tap (no URL)
+
+Homebrew resolves `brew tap USER/TAP` to the GitHub repository **`USER/homebrew-TAP`**. So for a short command without a URL, publish a **separate** empty repo named **`homebrew-tap`** under the same account:
+
+1. Create `https://github.com/avtomatization/homebrew-tap` (only `Formula/` and a short `README.md` is enough).
+2. From this repo, generate that tree and push:
+
+```bash
+bash scripts/prepare-homebrew-tap-repo.sh
+cd ../homebrew-tap
+git init && git add . && git commit -m "Add powermeter formula"
+git remote add origin git@github.com:avtomatization/homebrew-tap.git
+git branch -M main && git push -u origin main
+```
+
+3. Users install with:
+
+```bash
+brew tap avtomatization/tap
+brew install powermeter
+```
+
+Keep `Formula/powermeter.rb` in **either** the app repo (URL tap) **or** the tap repo in sync when you change the formula; the helper script only copies from this repo into `../homebrew-tap`.
+
 ## Update
 
 From the repo folder:
@@ -193,10 +217,17 @@ cd powermeter
 bash scripts/install.sh
 ```
 
-Через Homebrew:
+Через Homebrew (с URL к репозиторию приложения):
 
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
+brew install powermeter
+```
+
+Короткий вариант без URL — отдельный репозиторий **`avtomatization/homebrew-tap`** (см. раздел *Canonical tap* выше), затем:
+
+```bash
+brew tap avtomatization/tap
 brew install powermeter
 ```
 
@@ -206,7 +237,7 @@ brew install powermeter
 bash scripts/uninstall.sh
 ```
 
-Удаление Homebrew-установки: `brew uninstall powermeter` и при желании `brew untap avtomatization/powermeter`.
+Удаление Homebrew-установки: `brew uninstall powermeter` и при желании `brew untap avtomatization/powermeter` или `brew untap avtomatization/tap`.
 
 Реальные интервалы обновления в меню: **1 / 2 / 5 / 10 секунд**.
 
