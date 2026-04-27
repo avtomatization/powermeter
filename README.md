@@ -70,27 +70,28 @@ brew untap avtomatization/powermeter
 
 ### Canonical tap (no URL)
 
-Homebrew resolves `brew tap USER/TAP` to the GitHub repository **`USER/homebrew-TAP`**. So for a short command without a URL, publish a **separate** empty repo named **`homebrew-tap`** under the same account:
+Homebrew resolves `brew tap USER/TAP` to the GitHub repository **`USER/homebrew-TAP`**. For **`brew tap avtomatization/tap`** without a URL, publish **`github.com/avtomatization/homebrew-tap`**.
 
-1. Create `https://github.com/avtomatization/homebrew-tap` (only `Formula/` and a short `README.md` is enough).
-2. From this repo, generate that tree and push:
+This repo already contains a mirror at **`homebrew-tap/`** (same layout as the standalone tap). After changing the root **`Formula/powermeter.rb`**, refresh the mirror:
 
 ```bash
 bash scripts/prepare-homebrew-tap-repo.sh
-cd ../homebrew-tap
-git init && git add . && git commit -m "Add powermeter formula"
-git remote add origin git@github.com:avtomatization/homebrew-tap.git
-git branch -M main && git push -u origin main
 ```
 
-3. Users install with:
+**First-time publish** (create an empty public repo **`homebrew-tap`** on GitHub under `avtomatization` if it does not exist; `gh repo create` may fail if your token lacks the **repo create** scope):
+
+```bash
+bash scripts/push-homebrew-tap.sh
+```
+
+The script copies `homebrew-tap/` into a temp git repo and pushes to **`git@github.com:avtomatization/homebrew-tap.git`**. Override the remote with **`TAP_REMOTE=...`** if needed.
+
+**Users install:**
 
 ```bash
 brew tap avtomatization/tap
 brew install powermeter
 ```
-
-Keep `Formula/powermeter.rb` in **either** the app repo (URL tap) **or** the tap repo in sync when you change the formula; the helper script only copies from this repo into `../homebrew-tap`.
 
 ## Update
 
@@ -224,7 +225,7 @@ brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.
 brew install powermeter
 ```
 
-Короткий вариант без URL — отдельный репозиторий **`avtomatization/homebrew-tap`** (см. раздел *Canonical tap* выше), затем:
+Короткий вариант без URL — репозиторий **`avtomatization/homebrew-tap`** (в этом репо есть зеркало **`homebrew-tap/`**; публикация: `bash scripts/push-homebrew-tap.sh` после создания пустого репо на GitHub). Установка:
 
 ```bash
 brew tap avtomatization/tap
