@@ -16,17 +16,22 @@ class Powermeter < Formula
   def install
     system "swift", "build", "-c", "release", "--disable-sandbox"
 
-    release_bin = Pathname.glob(".build/*/release/Powermeter").find(&:executable?) ||
-                  Pathname.new(".build/release/Powermeter").tap { |p| break p if p.executable? }
-    bundle_src = Pathname.glob(".build/*/release/Powermeter_Powermeter.bundle").find(&:directory?) ||
-                 Pathname.new(".build/release/Powermeter_Powermeter.bundle").tap { |p| break p if p.directory? }
-    odie "Powermeter release binary not found under .build" if release_bin.nil?
-    odie "Powermeter_Powermeter.bundle not found after swift build (SwiftPM resources)" if bundle_src.nil?
+    release_bin = Pathname.glob(".build/*/release/Powermeter").find(&:executable?)
+    release_bin = Pathname.new(".build/release/Powermeter") if release_bin.nil? && Pathname.new(".build/release/Powermeter").executable?
+    odie "Powermeter release binary not found under .build" if release_bin.nil? || !release_bin.executable?
+
+    bundle_src = Pathname.glob(".build/*/release/Powermeter_Powermeter.bundle").find(&:directory?)
+    if bundle_src.nil?
+      fallback = Pathname.new(".build/release/Powermeter_Powermeter.bundle")
+      bundle_src = fallback if fallback.directory?
+    end
+    odie "Powermeter_Powermeter.bundle not found after swift build (SwiftPM resources)" if bundle_src.nil? || !bundle_src.directory?
 
     bin.install release_bin
-    bin.install bundle_src
-    # Mirror bundle into libexec — app resolves `Cellar/.../libexec/Powermeter_Powermeter.bundle` if `bin/` lacks it.
+    # Copy the resource tree explicitly — `bin.install` on .bundle can be unreliable; app checks bin/ and libexec/.
     libexec.mkpath
+    FileUtils.rm_rf([bin/"Powermeter_Powermeter.bundle", libexec/"Powermeter_Powermeter.bundle"])
+    FileUtils.cp_r(bundle_src, bin/"Powermeter_Powermeter.bundle")
     FileUtils.cp_r(bundle_src, libexec/"Powermeter_Powermeter.bundle")
 
     exe = (bin/"Powermeter").realpath.to_s

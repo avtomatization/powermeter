@@ -32,6 +32,7 @@ enum PowermeterResourceBundle {
         for u in candidates {
             if let b = bundleIfValid(at: u) { return b }
         }
+        if let b = findBundleUnderKeg(root: kegRoot, maxDepth: 5) { return b }
 
         var dir = exeDir
         for _ in 0..<8 {
@@ -81,6 +82,25 @@ enum PowermeterResourceBundle {
         guard let b = Bundle(url: url),
               b.path(forResource: "en", ofType: "lproj") != nil else { return nil }
         return b
+    }
+
+    /// Walk the Homebrew keg (shallow) if `bin/` / `libexec/` layout differs.
+    private static func findBundleUnderKeg(root: URL, maxDepth: Int) -> Bundle? {
+        guard maxDepth >= 0 else { return nil }
+        let name = "Powermeter_Powermeter.bundle"
+        let direct = root.appendingPathComponent(name, isDirectory: true)
+        if let b = bundleIfValid(at: direct) { return b }
+        guard let subs = try? FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return nil }
+        for sub in subs {
+            var isDir: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: sub.path, isDirectory: &isDir), isDir.boolValue else { continue }
+            if let b = findBundleUnderKeg(root: sub, maxDepth: maxDepth - 1) { return b }
+        }
+        return nil
     }
 
     /// `.build/<triple>/release|debug/Powermeter_Powermeter.bundle`
