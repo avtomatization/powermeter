@@ -2,14 +2,15 @@ import Foundation
 
 enum L10n {
     static func string(_ key: String, language: AppLanguage) -> String {
+        let module = PowermeterResourceBundle.shared
         guard
-            let path = Bundle.module.path(forResource: language.bundleFolderName, ofType: "lproj"),
+            let path = module.path(forResource: language.bundleFolderName, ofType: "lproj"),
             let bundle = Bundle(path: path)
         else {
             return NSLocalizedString(
                 key,
                 tableName: nil,
-                bundle: .module,
+                bundle: module,
                 value: key,
                 comment: ""
             )
@@ -22,5 +23,4 @@ enum L10n {
             comment: ""
         )
     }
-
 }
