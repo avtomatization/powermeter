@@ -3,6 +3,7 @@
 "menu.language" = "Language";
 "menu.refresh_interval" = "Refresh interval";
 "menu.precision" = "Precision";
+"menu.launch_at_login" = "Open at login";
 "menu.quit" = "Quit";
 
 "settings.interval.s1" = "1 s";

@@ -132,6 +132,9 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(precision.rawValue, forKey: Keys.precision) }
     }
 
+    /// Автозапуск через LaunchAgent (`com.powermeter.menu`), синхронизируется с plist на диске.
+    @Published private(set) var launchAtLogin: Bool
+
     init() {
         if let raw = defaults.string(forKey: Keys.language),
            let lang = AppLanguage(rawValue: raw) {
@@ -154,6 +157,8 @@ final class AppSettings: ObservableObject {
             precision = .high
         }
 
+        launchAtLogin = LaunchAtLogin.isEnabled()
+
         if !defaults.bool(forKey: Keys.liveRefreshMigration) {
             refreshInterval = .s1
             precision = .high
@@ -167,5 +172,11 @@ final class AppSettings: ObservableObject {
             }
             defaults.set(true, forKey: Keys.realIntervalMigration)
         }
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        guard enabled != launchAtLogin else { return }
+        LaunchAtLogin.setEnabled(enabled)
+        launchAtLogin = LaunchAtLogin.isEnabled()
     }
 }

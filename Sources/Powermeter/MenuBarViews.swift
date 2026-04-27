@@ -73,6 +73,13 @@ struct MenuBarDropdownContent: View {
                         }
                     }
                 }
+
+                Toggle(isOn: Binding(
+                    get: { settings.launchAtLogin },
+                    set: { settings.setLaunchAtLogin($0) }
+                )) {
+                    Text(L10n.string("menu.launch_at_login", language: settings.language))
+                }
             }
 
             Divider()

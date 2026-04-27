@@ -3,6 +3,7 @@
 "menu.language" = "Язык";
 "menu.refresh_interval" = "Частота обновления";
 "menu.precision" = "Точность";
+"menu.launch_at_login" = "Запускать при входе в систему";
 "menu.quit" = "Выход";
 
 "settings.interval.s1" = "1 с";

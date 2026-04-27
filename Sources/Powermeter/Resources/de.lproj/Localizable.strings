@@ -3,6 +3,7 @@
 "menu.language" = "Sprache";
 "menu.refresh_interval" = "Aktualisierungsintervall";
 "menu.precision" = "Genauigkeit";
+"menu.launch_at_login" = "Beim Anmelden öffnen";
 "menu.quit" = "Beenden";
 
 "settings.interval.s1" = "1 s";
