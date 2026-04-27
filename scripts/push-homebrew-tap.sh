@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Pushes homebrew-tap/ to a standalone GitHub repo (default: avtomatization/homebrew-tap).
-# Create an empty repo on GitHub first if it does not exist (gh token may lack repo:create).
+# Clones the remote, copies README + Formula on top of existing history, commits, and pushes
+# (avoids "rejected: fetch first" from a fresh git init with an unrelated first commit).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TAP_SRC="$ROOT/homebrew-tap"
@@ -15,20 +16,52 @@ TMP="$(mktemp -d)"
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
 
-cp "$TAP_SRC/README.md" "$TMP/"
-mkdir -p "$TMP/Formula"
-cp "$TAP_SRC/Formula/powermeter.rb" "$TMP/Formula/powermeter.rb"
+git clone "$REMOTE" "$TMP/repo"
 
-cd "$TMP"
-git init -q
-git add README.md Formula/powermeter.rb
-if git diff --cached --quiet; then
-  echo "Nothing to commit." >&2
-  exit 1
+cd "$TMP/repo"
+
+resolve_branch() {
+  local b
+  b="$(git symbolic-ref -q refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || true)"
+  if [[ -n "$b" ]]; then
+    echo "$b"
+    return
+  fi
+  for b in main master; do
+    if git show-ref --verify --quiet "refs/remotes/origin/$b"; then
+      echo "$b"
+      return
+    fi
+  done
+  echo "main"
+}
+
+if git rev-parse HEAD >/dev/null 2>&1; then
+  BRANCH="$(git branch --show-current)"
+  if [[ -z "$BRANCH" ]]; then
+    BRANCH="$(resolve_branch)"
+    git checkout "$BRANCH" 2>/dev/null || git checkout -b "$BRANCH" "origin/$BRANCH"
+  fi
+  git pull --rebase origin "$BRANCH"
+else
+  # Empty clone (no commits on remote yet)
+  BRANCH=main
+  git checkout -b "$BRANCH"
 fi
-git commit -q -m "Add powermeter formula"
-git branch -M main
-git remote add origin "$REMOTE"
-git push -u origin main
 
-echo "Pushed to $REMOTE"
+cp "$TAP_SRC/README.md" README.md
+mkdir -p Formula
+cp "$TAP_SRC/Formula/powermeter.rb" Formula/powermeter.rb
+
+git add README.md Formula/powermeter.rb
+
+if git diff --cached --quiet; then
+  echo "Remote tap already matches local homebrew-tap/ (nothing to commit)."
+  exit 0
+fi
+
+git commit -m "Sync powermeter formula from avtomatization/powermeter"
+
+git push -u origin "$BRANCH"
+
+echo "Pushed to $REMOTE ($BRANCH)"

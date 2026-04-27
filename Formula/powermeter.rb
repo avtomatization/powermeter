@@ -1,9 +1,10 @@
 # typed: false
 # frozen_string_literal: true
 # HEAD-only: brew install --HEAD powermeter | brew reinstall powermeter (no --HEAD on reinstall; see README).
-
-require "pathname"
-require "shellwords"
+#
+# Install layout is implemented in scripts/homebrew-install.sh (from the cloned source) so
+# `brew tap avtomatization/tap` users get keg fixes after `brew update` without republishing
+# homebrew-tap for every change — only when this `install` method changes.
 
 class Powermeter < Formula
   desc "macOS menu bar live power (SMC PSTR), battery fallback"
@@ -16,98 +17,67 @@ class Powermeter < Formula
   def install
     system "swift", "build", "-c", "release", "--disable-sandbox"
 
-    release_bin = Pathname.glob(".build/*/release/Powermeter").find(&:executable?)
-    release_bin = Pathname.new(".build/release/Powermeter") if release_bin.nil? && Pathname.new(".build/release/Powermeter").executable?
-    odie "Powermeter release binary not found under .build" if release_bin.nil? || !release_bin.executable?
+    install_script = buildpath/"scripts/homebrew-install.sh"
+    odie "scripts/homebrew-install.sh missing in source checkout" unless install_script.file?
 
-    bundle_src = Pathname.glob(".build/*/release/Powermeter_Powermeter.bundle").find(&:directory?)
-    if bundle_src.nil?
-      fallback = Pathname.new(".build/release/Powermeter_Powermeter.bundle")
-      bundle_src = fallback if fallback.directory?
-    end
-    odie "Powermeter_Powermeter.bundle not found after swift build (SwiftPM resources)" if bundle_src.nil? || !bundle_src.directory?
-
-    bin.install release_bin
-    # Copy the resource tree explicitly — `bin.install` on .bundle can be unreliable; app checks bin/ and libexec/.
-    libexec.mkpath
-    FileUtils.rm_rf([bin/"Powermeter_Powermeter.bundle", libexec/"Powermeter_Powermeter.bundle"])
-    FileUtils.cp_r(bundle_src, bin/"Powermeter_Powermeter.bundle")
-    FileUtils.cp_r(bundle_src, libexec/"Powermeter_Powermeter.bundle")
-
-    exe = (bin/"Powermeter").realpath.to_s
-    (libexec/"powermeter-brew-autostart-once.sh").write(<<~SH)
-      #!/bin/bash
-      # One-shot job: runs in the per-user GUI launchd domain so `open` can attach to WindowServer.
-      set -u
-      PLIST="${HOME}/Library/LaunchAgents/com.powermeter.brew-autostart-once.plist"
-      EXE=#{Shellwords.escape(exe)}
-      LOG="${HOME}/Library/Logs/Powermeter/brew-autostart-once.log"
-      mkdir -p "${HOME}/Library/Logs/Powermeter"
-      exec >>"${LOG}" 2>&1
-      echo "=== $(/bin/date) autostart-once EXE=${EXE} ==="
-      cleanup() {
-        /usr/bin/launchctl bootout "gui/$(id -u)" "${PLIST}" 2>/dev/null || true
-        /bin/rm -f "${PLIST}"
-        echo "=== $(/bin/date) removed one-shot plist ==="
-      }
-      trap cleanup EXIT
-      /usr/bin/pkill -x Powermeter 2>/dev/null || true
-      sleep 0.5
-      if /usr/bin/open -n "${EXE}"; then
-        echo "open -n ok"
-      else
-        echo "open -n failed, nohup fallback"
-        /usr/bin/nohup "${EXE}" </dev/null >/dev/null 2>&1 &
-      fi
-      sleep 2
-      /usr/bin/pgrep -lx Powermeter || echo "pgrep: Powermeter not running"
-    SH
-    (libexec/"powermeter-brew-autostart-once.sh").chmod(0o755)
+    system "bash", install_script.to_s, prefix.to_s, buildpath.to_s
   end
 
   def post_install
+    unless (libexec/"Powermeter_Powermeter.bundle").directory? &&
+           (share/"powermeter/Powermeter_Powermeter.bundle").directory?
+      odie <<~ERR
+        Resource bundle was not installed under:
+          #{libexec}/Powermeter_Powermeter.bundle
+          #{share}/powermeter/Powermeter_Powermeter.bundle
+        Report this with `brew gist-logs powermeter`.
+      ERR
+    end
+
     wrapper = (libexec/"powermeter-brew-autostart-once.sh").realpath.to_s
     return unless File.executable?(wrapper)
 
-    log_dir = File.join(Dir.home, "Library/Logs/Powermeter")
-    FileUtils.mkdir_p(log_dir)
-    out_log = File.join(log_dir, "brew-autostart-launchd-stdout.log")
-    err_log = File.join(log_dir, "brew-autostart-launchd-stderr.log")
-    plist_path = File.join(Dir.home, "Library/LaunchAgents/com.powermeter.brew-autostart-once.plist")
+    begin
+      log_dir = File.join(Dir.home, "Library/Logs/Powermeter")
+      FileUtils.mkdir_p(log_dir)
+      out_log = File.join(log_dir, "brew-autostart-launchd-stdout.log")
+      err_log = File.join(log_dir, "brew-autostart-launchd-stderr.log")
+      plist_path = File.join(Dir.home, "Library/LaunchAgents/com.powermeter.brew-autostart-once.plist")
 
-    plist_xml = <<~PLIST
-      <?xml version="1.0" encoding="UTF-8"?>
-      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-      <plist version="1.0">
-      <dict>
-        <key>Label</key>
-        <string>com.powermeter.brew-autostart-once</string>
-        <key>ProgramArguments</key>
-        <array>
-          <string>#{wrapper}</string>
-        </array>
-        <key>RunAtLoad</key>
-        <true/>
-        <key>KeepAlive</key>
-        <false/>
-        <key>StandardOutPath</key>
-        <string>#{out_log}</string>
-        <key>StandardErrorPath</key>
-        <string>#{err_log}</string>
-      </dict>
-      </plist>
-    PLIST
+      plist_xml = <<~PLIST
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+          <key>Label</key>
+          <string>com.powermeter.brew-autostart-once</string>
+          <key>ProgramArguments</key>
+          <array>
+            <string>#{wrapper}</string>
+          </array>
+          <key>RunAtLoad</key>
+          <true/>
+          <key>KeepAlive</key>
+          <false/>
+          <key>StandardOutPath</key>
+          <string>#{out_log}</string>
+          <key>StandardErrorPath</key>
+          <string>#{err_log}</string>
+        </dict>
+        </plist>
+      PLIST
 
-    ohai "Starting Powermeter via a one-time user LaunchAgent (GUI session)…"
-    quiet_system "/bin/launchctl", "bootout", "gui/#{Process.uid}", plist_path if File.exist?(plist_path)
-    FileUtils.mkdir_p(File.dirname(plist_path))
-    File.write(plist_path, plist_xml)
-    unless system("/bin/launchctl", "bootstrap", "gui/#{Process.uid}", plist_path)
-      opoo "launchctl bootstrap failed; run `Powermeter` from Terminal."
+      ohai "Starting Powermeter via a one-time user LaunchAgent (GUI session)…"
+      quiet_system "/bin/launchctl", "bootout", "gui/#{Process.uid}", plist_path if File.exist?(plist_path)
+      FileUtils.mkdir_p(File.dirname(plist_path))
+      File.write(plist_path, plist_xml)
+      unless system("/bin/launchctl", "bootstrap", "gui/#{Process.uid}", plist_path)
+        opoo "launchctl bootstrap failed; run `Powermeter` from Terminal."
+      end
+    rescue StandardError => e
+      opoo "post_install: #{e}"
+      opoo "Run `Powermeter` once from a terminal."
     end
-  rescue StandardError => e
-    opoo "post_install: #{e}"
-    opoo "Run `Powermeter` once from a terminal."
   end
 
   def post_uninstall
@@ -128,8 +98,9 @@ class Powermeter < Formula
 
   test do
     assert_predicate bin/"Powermeter", :executable?
-    assert_predicate bin/"Powermeter_Powermeter.bundle", :directory?
     assert_predicate libexec/"Powermeter_Powermeter.bundle", :directory?
+    assert_predicate share/"powermeter/Powermeter_Powermeter.bundle", :directory?
+    refute_predicate bin/"Powermeter_Powermeter.bundle", :exist?
   end
 
   def caveats

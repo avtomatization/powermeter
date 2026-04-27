@@ -57,7 +57,7 @@ brew install --HEAD powermeter
 ```
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
-- Installs **`$(brew --prefix)/bin/Powermeter`** and **`Powermeter_Powermeter.bundle`** into **`bin/`**, and **mirrors the bundle** to **`libexec/`** so the app always finds resources even if **`bin/`** layout differs. The formula **fails the build** (`odie`) if SwiftPM does not produce the bundle.
+- After **`swift build`**, **`scripts/homebrew-install.sh`** (from the same checkout) installs **`$(brew --prefix)/bin/Powermeter`** (Mach-O only) and **`Powermeter_Powermeter.bundle`** under **`$(brew --prefix)/opt/powermeter/libexec/`** and **`…/share/powermeter/`** (Homebrew keeps those paths in the keg; **`bin/`** must not hold the bundle). The app resolves **`../libexec/`** or **`../share/powermeter/`** from the real Cellar binary. The script **exits with an error** if artifacts are missing; **`post_install`** **`odie`**s if either bundle path is absent.
 - **`post_install`** registers a **one-time user LaunchAgent** (`com.powermeter.brew-autostart-once`) in **`launchd`’s `gui/$UID` domain**, so the helper runs in your **GUI login session** and can call **`open -n`** on the Cellar binary; the plist **removes itself** when the job finishes. If nothing appears, run **`Powermeter`** manually. Logs: **`~/Library/Logs/Powermeter/brew-autostart-once.log`** and **`brew-autostart-launchd-stdout.log` / `stderr`**. No Dock icon.
 
 **Start at login:** menu bar item → **Settings** → **Open at login** (LaunchAgent `com.powermeter.menu`).
@@ -79,7 +79,16 @@ Use **`brew reinstall -v powermeter`** to print `post_install` steps. **`brew up
 
 ### Canonical tap (no URL)
 
-Homebrew resolves `brew tap USER/TAP` to the GitHub repository **`USER/homebrew-TAP`**. For **`brew tap avtomatization/tap`** without a URL, publish **`github.com/avtomatization/homebrew-tap`**.
+Homebrew resolves `brew tap USER/TAP` to the GitHub repository **`USER/homebrew-TAP`**. For **`brew tap avtomatization/tap`** without a URL, Brew loads the formula from **`github.com/avtomatization/homebrew-tap`**, but **`head`** still clones **`github.com/avtomatization/powermeter`**. If **`homebrew-tap` on GitHub is behind `main`**, **`reinstall`** can leave a tiny keg (about five files, no **`libexec`**) and Powermeter will crash with **missing `Powermeter_Powermeter.bundle`**. **Fix:** run **`brew update`**, then **`brew reinstall -v powermeter`**, after publishing the tap (**`bash scripts/push-homebrew-tap.sh`**), **or** switch to the tap that points at this repo (recommended):
+
+```bash
+brew uninstall powermeter 2>/dev/null || true
+brew untap avtomatization/tap 2>/dev/null || true
+brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
+brew install --HEAD powermeter
+```
+
+After a **one-time** update of **`homebrew-tap`**, keg layout is driven by **`scripts/homebrew-install.sh`** on **`main`**, so you do not need to republish the tap for every resource-path tweak.
 
 This repo already contains a mirror at **`homebrew-tap/`** (same layout as the standalone tap). After changing the root **`Formula/powermeter.rb`**, refresh the mirror:
 

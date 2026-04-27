@@ -10,7 +10,7 @@ enum PowermeterResourceBundle {
             let msg = """
             Powermeter: missing `Powermeter_Powermeter.bundle`.
             Executable: \(exe.path)
-            Expected next to the binary or in ../libexec/ (Homebrew). See README.
+            Expected next to the binary, ../libexec/, or ../share/powermeter/ (Homebrew). See README.
             """
             fputs("\(msg)\n", stderr)
             fatalError(msg)
@@ -23,11 +23,12 @@ enum PowermeterResourceBundle {
         let exeDir = exe.deletingLastPathComponent()
         let kegRoot = exeDir.deletingLastPathComponent()
 
-        // 1) Next to the binary (swift run, scripts/install.sh, ideal Homebrew `bin/`).
-        // 2) `../libexec/` — Homebrew copies the bundle here too; some taps/versions omit it from `bin/`.
+        // 1) Next to the binary (swift run, scripts/install.sh).
+        // 2) `../libexec/` and `../share/powermeter/` — Homebrew formula installs the bundle here (not in `bin/`).
         let candidates: [URL] = [
             exeDir.appendingPathComponent("Powermeter_Powermeter.bundle", isDirectory: true),
             kegRoot.appendingPathComponent("libexec/Powermeter_Powermeter.bundle", isDirectory: true),
+            kegRoot.appendingPathComponent("share/powermeter/Powermeter_Powermeter.bundle", isDirectory: true),
         ]
         for u in candidates {
             if let b = bundleIfValid(at: u) { return b }
