@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 # HEAD-only: brew install --HEAD powermeter | brew reinstall powermeter (no --HEAD on reinstall; see README).
 
+require "pathname"
 require "shellwords"
 
 class Powermeter < Formula
@@ -14,8 +15,19 @@ class Powermeter < Formula
 
   def install
     system "swift", "build", "-c", "release", "--disable-sandbox"
-    bin.install ".build/release/Powermeter"
-    bin.install ".build/release/Powermeter_Powermeter.bundle"
+
+    release_bin = Pathname.glob(".build/*/release/Powermeter").find(&:executable?) ||
+                  Pathname.new(".build/release/Powermeter").tap { |p| break p if p.executable? }
+    bundle_src = Pathname.glob(".build/*/release/Powermeter_Powermeter.bundle").find(&:directory?) ||
+                 Pathname.new(".build/release/Powermeter_Powermeter.bundle").tap { |p| break p if p.directory? }
+    odie "Powermeter release binary not found under .build" if release_bin.nil?
+    odie "Powermeter_Powermeter.bundle not found after swift build (SwiftPM resources)" if bundle_src.nil?
+
+    bin.install release_bin
+    bin.install bundle_src
+    # Mirror bundle into libexec — app resolves `Cellar/.../libexec/Powermeter_Powermeter.bundle` if `bin/` lacks it.
+    libexec.mkpath
+    FileUtils.cp_r(bundle_src, libexec/"Powermeter_Powermeter.bundle")
 
     exe = (bin/"Powermeter").realpath.to_s
     (libexec/"powermeter-brew-autostart-once.sh").write(<<~SH)
@@ -112,6 +124,7 @@ class Powermeter < Formula
   test do
     assert_predicate bin/"Powermeter", :executable?
     assert_predicate bin/"Powermeter_Powermeter.bundle", :directory?
+    assert_predicate libexec/"Powermeter_Powermeter.bundle", :directory?
   end
 
   def caveats

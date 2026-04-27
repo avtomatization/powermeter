@@ -10,7 +10,7 @@ enum PowermeterResourceBundle {
             let msg = """
             Powermeter: missing `Powermeter_Powermeter.bundle`.
             Executable: \(exe.path)
-            Put the bundle next to the binary, or run from `.build/release/Powermeter` (see README).
+            Expected next to the binary or in ../libexec/ (Homebrew). See README.
             """
             fputs("\(msg)\n", stderr)
             fatalError(msg)
@@ -21,8 +21,17 @@ enum PowermeterResourceBundle {
     private static func loadBundle() -> Bundle? {
         let exe = resolvedExecutableURL()
         let exeDir = exe.deletingLastPathComponent()
-        let sibling = exeDir.appendingPathComponent("Powermeter_Powermeter.bundle", isDirectory: true)
-        if let b = bundleIfValid(at: sibling) { return b }
+        let kegRoot = exeDir.deletingLastPathComponent()
+
+        // 1) Next to the binary (swift run, scripts/install.sh, ideal Homebrew `bin/`).
+        // 2) `../libexec/` — Homebrew copies the bundle here too; some taps/versions omit it from `bin/`.
+        let candidates: [URL] = [
+            exeDir.appendingPathComponent("Powermeter_Powermeter.bundle", isDirectory: true),
+            kegRoot.appendingPathComponent("libexec/Powermeter_Powermeter.bundle", isDirectory: true),
+        ]
+        for u in candidates {
+            if let b = bundleIfValid(at: u) { return b }
+        }
 
         var dir = exeDir
         for _ in 0..<8 {

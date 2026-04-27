@@ -57,7 +57,7 @@ brew install --HEAD powermeter
 ```
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
-- Installs **`$(brew --prefix)/bin/Powermeter`** and **`Powermeter_Powermeter.bundle`** (SwiftPM resources / localizations) into the same Homebrew prefix **`bin/`** directory.
+- Installs **`$(brew --prefix)/bin/Powermeter`** and **`Powermeter_Powermeter.bundle`** into **`bin/`**, and **mirrors the bundle** to **`libexec/`** so the app always finds resources even if **`bin/`** layout differs. The formula **fails the build** (`odie`) if SwiftPM does not produce the bundle.
 - **`post_install`** registers a **one-time user LaunchAgent** (`com.powermeter.brew-autostart-once`) in **`launchd`’s `gui/$UID` domain**, so the helper runs in your **GUI login session** and can call **`open -n`** on the Cellar binary; the plist **removes itself** when the job finishes. If nothing appears, run **`Powermeter`** manually. Logs: **`~/Library/Logs/Powermeter/brew-autostart-once.log`** and **`brew-autostart-launchd-stdout.log` / `stderr`**. No Dock icon.
 
 **Start at login:** menu bar item → **Settings** → **Open at login** (LaunchAgent `com.powermeter.menu`).
