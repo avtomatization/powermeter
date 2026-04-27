@@ -58,7 +58,7 @@ brew install --HEAD powermeter
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
 - Installs **`$(brew --prefix)/bin/Powermeter`** and **`Powermeter_Powermeter.bundle`** (SwiftPM resources / localizations) into the same Homebrew prefix **`bin/`** directory.
-- **`post_install`** starts Powermeter once in the background so the **menu bar** item (⚡ + watts) appears without an extra command. If macOS blocks it or start fails, run **`Powermeter`** manually (new terminal tab if `command not found`). No Dock icon.
+- **`post_install`** stops any running Powermeter, then starts it with **`open`(1)** so the process attaches to your **GUI login session** (required for `MenuBarExtra`). If nothing appears, run **`Powermeter`** manually. No Dock icon.
 
 **Start at login:** menu bar item → **Settings** → **Open at login** (LaunchAgent `com.powermeter.menu`).
 
@@ -231,7 +231,7 @@ brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.
 brew install --HEAD powermeter
 ```
 
-После **`brew install`** формула **автоматически один раз запускает** Powermeter (иконка в **строке меню**). Если не появилось — **`Powermeter`** вручную. Автозапуск при входе: трей → **Настройки** → **Запускать при входе в систему**.
+После **`brew install`** формула **останавливает старый процесс и запускает** Powermeter через **`open`**, чтобы приложение попало в **GUI-сессию** (иначе пункт меню не появляется). Если иконки нет — запусти **`Powermeter`** вручную. Автозапуск при входе: трей → **Настройки** → **Запускать при входе в систему**.
 
 Короткий вариант без URL — репозиторий **`avtomatization/homebrew-tap`** (в этом репо есть зеркало **`homebrew-tap/`**; публикация: `bash scripts/push-homebrew-tap.sh` после создания пустого репо на GitHub). Установка:
 

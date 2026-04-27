@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 # HEAD-only: brew install --HEAD powermeter (see README).
 
+require "shellwords"
+
 class Powermeter < Formula
   desc "macOS menu bar live power (SMC PSTR), battery fallback"
   homepage "https://github.com/avtomatization/powermeter"
@@ -19,10 +21,20 @@ class Powermeter < Formula
 
   def post_install
     exe = bin/"Powermeter"
-    return unless exe.exist?
+    path = exe.realpath.to_s
+    return unless File.executable?(path)
 
     ohai "Starting Powermeter in the menu bar…"
-    Process.detach(Process.spawn(exe.to_s, in: File::NULL, out: File::NULL, err: File::NULL))
+    # Release single-instance lock / old binary so the new build can run.
+    quiet_system "/usr/bin/pkill", "-x", "Powermeter"
+    sleep 0.5
+
+    # MenuBarExtra needs WindowServer: `open`(1) starts the binary in the GUI login context.
+    # Raw Process.spawn from brew often never shows in the menu bar.
+    started = quiet_system("/usr/bin/open", path)
+    unless started
+      quiet_system("/bin/sh", "-c", "nohup #{Shellwords.escape(path)} >/dev/null 2>&1 &")
+    end
   rescue StandardError => e
     opoo "Could not start Powermeter automatically: #{e}"
     opoo "Run `Powermeter` once from a terminal."
@@ -48,8 +60,8 @@ class Powermeter < Formula
 
   def caveats
     <<~EOS
-      Powermeter is a menu bar-only app (no Dock icon). It should start automatically after install.
-      If you do not see the bolt + watts icon, run `Powermeter` once (check Privacy & Security if blocked).
+      Powermeter is a menu bar-only app (no Dock icon). `brew install` tries to start it via `open`(1).
+      If the icon does not appear, run `Powermeter` once (check Privacy & Security if blocked).
       Autostart at login: menu bar item → Settings → Open at login.
       `brew uninstall powermeter` stops the app, removes the LaunchAgent plist, logs, and any copy in `~/.local/bin`.
     EOS
