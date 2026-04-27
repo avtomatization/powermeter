@@ -6,7 +6,7 @@ brew install --HEAD powermeter
 Powermeter
 ```
 
-**Run:** Homebrew does not auto-start the app. Run **`Powermeter`** once in Terminal (binary is in `$(brew --prefix)/bin/`). Look for the **bolt + watts** in the **menu bar** (no Dock icon). Autostart: tray menu → **Settings** → **Open at login**.
+**Run:** execute **`Powermeter`** once after install (menu bar app, no Dock). Autostart: **Settings → Open at login** in the tray menu.
 
 Formulas live under `Formula/`. Source: [Powermeter](https://github.com/avtomatization/powermeter).
 

@@ -41,7 +41,7 @@ bash scripts/install.sh
 The installer will:
 
 1. Build the release binary.
-2. Copy it to `~/.local/bin/Powermeter`.
+2. Copy **`Powermeter`** and **`Powermeter_Powermeter.bundle`** (localizations) to `~/.local/bin/`.
 3. Create a LaunchAgent at `~/Library/LaunchAgents/com.powermeter.menu.plist`.
 4. Start Powermeter now and enable it at login.
 
@@ -122,7 +122,7 @@ The script replaces the installed binary and restarts the menu bar item.
 bash scripts/uninstall.sh
 ```
 
-This stops Powermeter, removes the LaunchAgent, and deletes `~/.local/bin/Powermeter`. UserDefaults preferences are left untouched.
+This stops Powermeter, removes the LaunchAgent, and deletes **`~/.local/bin/Powermeter`** and **`~/.local/bin/Powermeter_Powermeter.bundle`**. UserDefaults preferences are left untouched.
 
 ## Run Without Installing
 
@@ -130,6 +130,8 @@ This stops Powermeter, removes the LaunchAgent, and deletes `~/.local/bin/Powerm
 swift build -c release
 .build/release/Powermeter
 ```
+
+SwiftPM keeps the resource bundle in the same folder as the binary (`.build/release/` is usually a symlink to `.build/<arch>-apple-macosx/release/`). If `.build/release/` is missing on your toolchain, run the binary under `.build/<arch>-apple-macosx/release/` instead.
 
 Stop it:
 
@@ -214,9 +216,10 @@ bash scripts/capture-tray-series.sh 5 6 /tmp/powermeter-tray
 ```bash
 swift build
 swift build -c release
+swift run Powermeter
 ```
 
-There is no XCTest target yet.
+`swift run` builds a **debug** binary with the bundle next to it; useful while iterating. There is no XCTest target yet.
 
 ## Кратко По-Русски
 
@@ -248,13 +251,15 @@ brew install --HEAD powermeter
 Powermeter
 ```
 
-Удаление:
+Удаление (скрипт ставил в `~/.local/bin`): удаляет бинарник, **`Powermeter_Powermeter.bundle`** и LaunchAgent.
 
 ```bash
 bash scripts/uninstall.sh
 ```
 
 Удаление Homebrew-установки: `brew uninstall powermeter` и при желании `brew untap avtomatization/powermeter` или `brew untap avtomatization/tap`.
+
+Запуск без установки: после `swift build -c release` — **`.build/release/Powermeter`** (бандл локализаций в той же папке; при отсутствии symlink — путь с `.build/<arch>-apple-macosx/release/`). Для разработки удобно **`swift run Powermeter`**.
 
 Реальные интервалы обновления в меню: **1 / 2 / 5 / 10 секунд**.
 

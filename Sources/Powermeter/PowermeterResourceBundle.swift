@@ -6,11 +6,11 @@ import Foundation
 enum PowermeterResourceBundle {
     static let shared: Bundle = {
         guard let b = loadBundle() else {
-            let exe = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
+            let exe = resolvedExecutableURL()
             let msg = """
             Powermeter: missing `Powermeter_Powermeter.bundle`.
             Executable: \(exe.path)
-            Put the bundle next to the binary, or run from `.build/<arch>-apple-macosx/release/Powermeter`.
+            Put the bundle next to the binary, or run from `.build/release/Powermeter` (see README).
             """
             fputs("\(msg)\n", stderr)
             fatalError(msg)
@@ -19,7 +19,7 @@ enum PowermeterResourceBundle {
     }()
 
     private static func loadBundle() -> Bundle? {
-        let exe = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
+        let exe = resolvedExecutableURL()
         let exeDir = exe.deletingLastPathComponent()
         let sibling = exeDir.appendingPathComponent("Powermeter_Powermeter.bundle", isDirectory: true)
         if let b = bundleIfValid(at: sibling) { return b }
@@ -34,6 +34,36 @@ enum PowermeterResourceBundle {
             let parent = dir.deletingLastPathComponent()
             if parent.standardizedFileURL == dir.standardizedFileURL { break }
             dir = parent
+        }
+        return nil
+    }
+
+    /// `argv[0]` may be relative (`./.build/release/Powermeter`) or a bare name from `exec` (`Powermeter`).
+    private static func resolvedExecutableURL() -> URL {
+        let arg0 = CommandLine.arguments[0]
+        if !arg0.contains("/") {
+            if let hit = resolveInPATH(executableName: arg0) {
+                return hit
+            }
+        }
+        let base: URL
+        if arg0.hasPrefix("/") {
+            base = URL(fileURLWithPath: arg0)
+        } else {
+            let cwd = FileManager.default.currentDirectoryPath
+            base = URL(fileURLWithPath: cwd, isDirectory: true).appendingPathComponent(arg0)
+        }
+        return base.standardizedFileURL.resolvingSymlinksInPath()
+    }
+
+    private static func resolveInPATH(executableName: String) -> URL? {
+        guard let pathEnv = ProcessInfo.processInfo.environment["PATH"] else { return nil }
+        for dir in pathEnv.split(separator: ":") where !dir.isEmpty {
+            let u = URL(fileURLWithPath: String(dir), isDirectory: true)
+                .appendingPathComponent(executableName)
+            if FileManager.default.isExecutableFile(atPath: u.path) {
+                return u.resolvingSymlinksInPath()
+            }
         }
         return nil
     }
