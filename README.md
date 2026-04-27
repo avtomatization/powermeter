@@ -54,23 +54,15 @@ This repository includes a **Homebrew formula** at `Formula/powermeter.rb`. You 
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
 brew install --HEAD powermeter
-Powermeter
 ```
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
-- The binary is installed as **`$(brew --prefix)/bin/Powermeter`**, with **`Powermeter_Powermeter.bundle`** next to it (SwiftPM resources / localizations). Both are required to run.
+- Installs **`$(brew --prefix)/bin/Powermeter`** and **`Powermeter_Powermeter.bundle`** (SwiftPM resources / localizations) into the same Homebrew prefix **`bin/`** directory.
+- **`post_install`** starts Powermeter once in the background so the **menu bar** item (⚡ + watts) appears without an extra command. If macOS blocks it or start fails, run **`Powermeter`** manually (new terminal tab if `command not found`). No Dock icon.
 
-**Run after install:** Homebrew does not start the app for you. Powermeter is a **menu bar only** app (no Dock icon). Start it once:
+**Start at login:** menu bar item → **Settings** → **Open at login** (LaunchAgent `com.powermeter.menu`).
 
-```bash
-Powermeter
-```
-
-If `command not found`, open a **new** terminal tab or run the full path above. Then look for the **bolt (⚡) + watts** icon on the **right side of the menu bar**. First launch may require **System Settings → Privacy & Security** to allow the binary.
-
-**Start at login:** open the menu bar item → **Settings** → **Open at login** (same LaunchAgent idea as `scripts/install.sh`).
-
-**Uninstall:**
+**Uninstall** removes the Homebrew keg and runs **`post_uninstall`**: stops Powermeter (`pkill`), removes **`~/Library/LaunchAgents/com.powermeter.menu.plist`** (after `launchctl bootout`), deletes **`~/Library/Logs/Powermeter`**, and removes **`~/.local/bin/Powermeter`** plus **`~/.local/bin/Powermeter_Powermeter.bundle`** if present so an old script install cannot shadow the brew shim. **UserDefaults** keys are not deleted.
 
 ```bash
 brew uninstall powermeter
@@ -100,10 +92,9 @@ The script copies `homebrew-tap/` into a temp git repo and pushes to **`git@gith
 ```bash
 brew tap avtomatization/tap
 brew install --HEAD powermeter
-Powermeter
 ```
 
-Same as above: run **`Powermeter`** once, then use **Settings → Open at login** if you want it at every sign-in.
+Same behavior as above: **`post_install`** starts the menu bar app; **`brew uninstall`** performs the full cleanup described there.
 
 ## Update
 
@@ -238,17 +229,15 @@ bash scripts/install.sh
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
 brew install --HEAD powermeter
-Powermeter
 ```
 
-После **`brew install`** приложение **само не стартует**. Запуск один раз из терминала: **`Powermeter`** (бинарник в `$(brew --prefix)/bin/`). Иконка — **молния и ватты** в **строке меню** справа; в Dock ничего не появится. Автозапуск: меню трея → **Настройки** → **Запускать при входе в систему**.
+После **`brew install`** формула **автоматически один раз запускает** Powermeter (иконка в **строке меню**). Если не появилось — **`Powermeter`** вручную. Автозапуск при входе: трей → **Настройки** → **Запускать при входе в систему**.
 
 Короткий вариант без URL — репозиторий **`avtomatization/homebrew-tap`** (в этом репо есть зеркало **`homebrew-tap/`**; публикация: `bash scripts/push-homebrew-tap.sh` после создания пустого репо на GitHub). Установка:
 
 ```bash
 brew tap avtomatization/tap
 brew install --HEAD powermeter
-Powermeter
 ```
 
 Удаление (скрипт ставил в `~/.local/bin`): удаляет бинарник, **`Powermeter_Powermeter.bundle`** и LaunchAgent.
@@ -257,7 +246,7 @@ Powermeter
 bash scripts/uninstall.sh
 ```
 
-Удаление Homebrew-установки: `brew uninstall powermeter` и при желании `brew untap avtomatization/powermeter` или `brew untap avtomatization/tap`.
+Удаление Homebrew: `brew uninstall powermeter` (полная очистка см. выше) и при желании `brew untap avtomatization/powermeter` или `brew untap avtomatization/tap`.
 
 Запуск без установки: после `swift build -c release` — **`.build/release/Powermeter`** (бандл локализаций в той же папке; при отсутствии symlink — путь с `.build/<arch>-apple-macosx/release/`). Для разработки удобно **`swift run Powermeter`**.
 

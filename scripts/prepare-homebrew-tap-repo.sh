@@ -15,10 +15,9 @@ cat > "$DEST/README.md" << 'EOF'
 ```bash
 brew tap avtomatization/tap
 brew install --HEAD powermeter
-Powermeter
 ```
 
-**Run:** execute **`Powermeter`** once after install (menu bar app, no Dock). The formula installs **`Powermeter_Powermeter.bundle`** next to the binary (localizations). Autostart: **Settings → Open at login** in the tray menu.
+Install puts **`Powermeter`** + **`Powermeter_Powermeter.bundle`** in Homebrew `bin/`; **`post_install`** starts the menu bar app once. If it does not appear, run **`Powermeter`**. **`brew uninstall`** stops the app, removes LaunchAgent `com.powermeter.menu`, `~/Library/Logs/Powermeter`, and any `~/.local/bin` copy from the shell installer.
 
 Formulas live under `Formula/`. Source: [Powermeter](https://github.com/avtomatization/powermeter).
 
