@@ -47,6 +47,27 @@ The installer will:
 
 If macOS blocks the first launch, open **System Settings → Privacy & Security** and allow Powermeter.
 
+## Install with Homebrew (tap from this repo)
+
+This repository includes a **Homebrew formula** at `Formula/powermeter.rb`. You do **not** need a separate `homebrew-*` repo: point `brew tap` at this URL once, then install.
+
+```bash
+brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
+brew install powermeter
+```
+
+- Builds the latest `main` from source (Swift release build; formula is **HEAD-only**).
+- The binary is installed as `$(brew --prefix)/bin/Powermeter`.
+
+**Optional:** add the same LaunchAgent autostart as the shell installer (copy from `scripts/install.sh` or run that script after `brew install`).
+
+**Uninstall:**
+
+```bash
+brew uninstall powermeter
+brew untap avtomatization/powermeter
+```
+
 ## Update
 
 From the repo folder:
@@ -172,11 +193,20 @@ cd powermeter
 bash scripts/install.sh
 ```
 
+Через Homebrew:
+
+```bash
+brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
+brew install powermeter
+```
+
 Удаление:
 
 ```bash
 bash scripts/uninstall.sh
 ```
+
+Удаление Homebrew-установки: `brew uninstall powermeter` и при желании `brew untap avtomatization/powermeter`.
 
 Реальные интервалы обновления в меню: **1 / 2 / 5 / 10 секунд**.
 
