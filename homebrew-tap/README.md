@@ -5,7 +5,7 @@ brew tap avtomatization/tap
 brew install --HEAD powermeter
 ```
 
-Install puts **`Powermeter`** + **`Powermeter_Powermeter.bundle`** in Homebrew `bin/`; **`post_install`** `pkill`s any old instance then runs **`open /path/to/Powermeter`** so the app attaches to the GUI session. If it does not appear, run **`Powermeter`**. **`brew uninstall`** stops the app, removes LaunchAgent `com.powermeter.menu`, `~/Library/Logs/Powermeter`, and any `~/.local/bin` copy from the shell installer.
+Reinstall / upgrade: **`brew reinstall powermeter`** (not `reinstall --HEAD`; verbose: **`-v`**). Install puts **`Powermeter`** + **`Powermeter_Powermeter.bundle`** in Homebrew `bin/`; **`post_install`** `pkill`s any old instance then runs **`open /path/to/Powermeter`** so the app attaches to the GUI session. If it does not appear, run **`Powermeter`**. **`brew uninstall`** stops the app, removes LaunchAgent `com.powermeter.menu`, `~/Library/Logs/Powermeter`, and any `~/.local/bin` copy from the shell installer.
 
 Formulas live under `Formula/`. Source: [Powermeter](https://github.com/avtomatization/powermeter).
 

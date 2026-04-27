@@ -1,6 +1,6 @@
 # typed: false
 # frozen_string_literal: true
-# HEAD-only: brew install --HEAD powermeter (see README).
+# HEAD-only: brew install --HEAD powermeter | brew reinstall powermeter (no --HEAD on reinstall; see README).
 
 require "shellwords"
 
@@ -64,6 +64,7 @@ class Powermeter < Formula
       If the icon does not appear, run `Powermeter` once (check Privacy & Security if blocked).
       Autostart at login: menu bar item → Settings → Open at login.
       `brew uninstall powermeter` stops the app, removes the LaunchAgent plist, logs, and any copy in `~/.local/bin`.
+      Reinstall / rebuild: `brew reinstall powermeter` (do not pass `--HEAD` to `reinstall`; use `-v` for verbose).
     EOS
   end
 end

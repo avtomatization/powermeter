@@ -69,6 +69,14 @@ brew uninstall powermeter
 brew untap avtomatization/powermeter
 ```
 
+**Reinstall or upgrade:** use **`--HEAD` only with `brew install`**, not with `reinstall`. To rebuild and run **`post_install`** again:
+
+```bash
+brew reinstall powermeter
+```
+
+Use **`brew reinstall -v powermeter`** to print `post_install` steps. **`brew upgrade powermeter`** updates a HEAD install when the tap has a newer revision.
+
 ### Canonical tap (no URL)
 
 Homebrew resolves `brew tap USER/TAP` to the GitHub repository **`USER/homebrew-TAP`**. For **`brew tap avtomatization/tap`** without a URL, publish **`github.com/avtomatization/homebrew-tap`**.
@@ -247,6 +255,8 @@ bash scripts/uninstall.sh
 ```
 
 Удаление Homebrew: `brew uninstall powermeter` (полная очистка см. выше) и при желании `brew untap avtomatization/powermeter` или `brew untap avtomatization/tap`.
+
+Переустановка / обновление: **`brew reinstall --HEAD` не существует** — у Homebrew флаг **`--HEAD` только у `install`**. Повторная сборка и **`post_install`**: **`brew reinstall powermeter`** (подробный лог: **`brew reinstall -v powermeter`**). Обновление: **`brew upgrade powermeter`**.
 
 Запуск без установки: после `swift build -c release` — **`.build/release/Powermeter`** (бандл локализаций в той же папке; при отсутствии symlink — путь с `.build/<arch>-apple-macosx/release/`). Для разработки удобно **`swift run Powermeter`**.
 
