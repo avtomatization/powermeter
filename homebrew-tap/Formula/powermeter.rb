@@ -18,4 +18,14 @@ class Powermeter < Formula
   test do
     assert_predicate bin/"Powermeter", :executable?
   end
+
+  def caveats
+    <<~EOS
+      Powermeter does not start by itself after install. It is a menu bar-only app (no Dock icon).
+      Run once in Terminal:
+        Powermeter
+      Then look for the bolt and watt readout on the right of the menu bar.
+      Autostart: menu bar item → Settings → Open at login.
+    EOS
+  end
 end

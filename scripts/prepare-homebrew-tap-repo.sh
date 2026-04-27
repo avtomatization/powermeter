@@ -15,7 +15,10 @@ cat > "$DEST/README.md" << 'EOF'
 ```bash
 brew tap avtomatization/tap
 brew install --HEAD powermeter
+Powermeter
 ```
+
+**Run:** execute **`Powermeter`** once after install (menu bar app, no Dock). Autostart: **Settings → Open at login** in the tray menu.
 
 Formulas live under `Formula/`. Source: [Powermeter](https://github.com/avtomatization/powermeter).
 

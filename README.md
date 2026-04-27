@@ -54,12 +54,21 @@ This repository includes a **Homebrew formula** at `Formula/powermeter.rb`. You 
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
 brew install --HEAD powermeter
+Powermeter
 ```
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
-- The binary is installed as `$(brew --prefix)/bin/Powermeter`.
+- The binary is installed as **`$(brew --prefix)/bin/Powermeter`** (Apple Silicon: usually `/opt/homebrew/bin/Powermeter`; Intel Homebrew: often `/usr/local/bin/Powermeter`).
 
-**Optional:** add the same LaunchAgent autostart as the shell installer (copy from `scripts/install.sh` or run that script after `brew install`).
+**Run after install:** Homebrew does not start the app for you. Powermeter is a **menu bar only** app (no Dock icon). Start it once:
+
+```bash
+Powermeter
+```
+
+If `command not found`, open a **new** terminal tab or run the full path above. Then look for the **bolt (⚡) + watts** icon on the **right side of the menu bar**. First launch may require **System Settings → Privacy & Security** to allow the binary.
+
+**Start at login:** open the menu bar item → **Settings** → **Open at login** (same LaunchAgent idea as `scripts/install.sh`).
 
 **Uninstall:**
 
@@ -91,7 +100,10 @@ The script copies `homebrew-tap/` into a temp git repo and pushes to **`git@gith
 ```bash
 brew tap avtomatization/tap
 brew install --HEAD powermeter
+Powermeter
 ```
+
+Same as above: run **`Powermeter`** once, then use **Settings → Open at login** if you want it at every sign-in.
 
 ## Update
 
@@ -223,13 +235,17 @@ bash scripts/install.sh
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
 brew install --HEAD powermeter
+Powermeter
 ```
+
+После **`brew install`** приложение **само не стартует**. Запуск один раз из терминала: **`Powermeter`** (бинарник в `$(brew --prefix)/bin/`). Иконка — **молния и ватты** в **строке меню** справа; в Dock ничего не появится. Автозапуск: меню трея → **Настройки** → **Запускать при входе в систему**.
 
 Короткий вариант без URL — репозиторий **`avtomatization/homebrew-tap`** (в этом репо есть зеркало **`homebrew-tap/`**; публикация: `bash scripts/push-homebrew-tap.sh` после создания пустого репо на GitHub). Установка:
 
 ```bash
 brew tap avtomatization/tap
 brew install --HEAD powermeter
+Powermeter
 ```
 
 Удаление:
