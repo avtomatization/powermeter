@@ -58,11 +58,11 @@ brew install --HEAD powermeter
 
 - Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
 - Installs **`$(brew --prefix)/bin/Powermeter`** and **`Powermeter_Powermeter.bundle`** (SwiftPM resources / localizations) into the same Homebrew prefix **`bin/`** directory.
-- **`post_install`** schedules a **deferred** start (~**2 s** after Homebrew exits, via **`nohup`** + **`open`(1)**) so the menu bar app can attach to **WindowServer**; an old instance is **`pkill`**’d first. If nothing appears, run **`Powermeter`** manually. Diagnostics: **`~/Library/Logs/Powermeter/brew-post-install-launch.log`**. No Dock icon.
+- **`post_install`** registers a **one-time user LaunchAgent** (`com.powermeter.brew-autostart-once`) in **`launchd`’s `gui/$UID` domain**, so the helper runs in your **GUI login session** and can call **`open -n`** on the Cellar binary; the plist **removes itself** when the job finishes. If nothing appears, run **`Powermeter`** manually. Logs: **`~/Library/Logs/Powermeter/brew-autostart-once.log`** and **`brew-autostart-launchd-stdout.log` / `stderr`**. No Dock icon.
 
 **Start at login:** menu bar item → **Settings** → **Open at login** (LaunchAgent `com.powermeter.menu`).
 
-**Uninstall** removes the Homebrew keg and runs **`post_uninstall`**: stops Powermeter (`pkill`), removes **`~/Library/LaunchAgents/com.powermeter.menu.plist`** (after `launchctl bootout`), deletes **`~/Library/Logs/Powermeter`**, and removes **`~/.local/bin/Powermeter`** plus **`~/.local/bin/Powermeter_Powermeter.bundle`** if present so an old script install cannot shadow the brew shim. **UserDefaults** keys are not deleted.
+**Uninstall** removes the Homebrew keg and runs **`post_uninstall`**: stops Powermeter (`pkill`), removes **`com.powermeter.brew-autostart-once.plist`** and **`com.powermeter.menu.plist`** (after `bootout`), deletes **`~/Library/Logs/Powermeter`**, and removes **`~/.local/bin/Powermeter`** plus **`~/.local/bin/Powermeter_Powermeter.bundle`** if present. **UserDefaults** keys are not deleted.
 
 ```bash
 brew uninstall powermeter
@@ -187,7 +187,8 @@ Debug log:
 After **`brew install` / `brew reinstall`**, if the tray icon is missing, check:
 
 ```bash
-~/Library/Logs/Powermeter/brew-post-install-launch.log
+ls ~/Library/Logs/Powermeter/
+cat ~/Library/Logs/Powermeter/brew-autostart-once.log
 ```
 
 Restart from source during development:
@@ -245,7 +246,7 @@ brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.
 brew install --HEAD powermeter
 ```
 
-После **`brew install` / `brew reinstall`** автозапуск **откладывается на ~2 с** (`nohup` + **`open`**, затем проверка `pgrep`); лог: **`~/Library/Logs/Powermeter/brew-post-install-launch.log`**. Если иконки нет — **`Powermeter`** вручную. Автозапуск при входе: трей → **Настройки** → **Запускать при входе в систему**.
+После **`brew install` / `brew reinstall`** ставится **одноразовый LaunchAgent** в **`gui/$UID`**, он делает **`open -n`** в GUI-сессии и удаляет plist. Логи: **`~/Library/Logs/Powermeter/brew-autostart-once.log`**. Если иконки нет — **`Powermeter`** вручную. Автозапуск при входе: трей → **Настройки** → **Запускать при входе в систему**.
 
 Короткий вариант без URL — репозиторий **`avtomatization/homebrew-tap`** (в этом репо есть зеркало **`homebrew-tap/`**; публикация: `bash scripts/push-homebrew-tap.sh` после создания пустого репо на GitHub). Установка:
 

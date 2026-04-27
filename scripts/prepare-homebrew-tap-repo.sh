@@ -17,7 +17,7 @@ brew tap avtomatization/tap
 brew install --HEAD powermeter
 ```
 
-Reinstall / upgrade: **`brew reinstall powermeter`** (not `reinstall --HEAD`; verbose: **`-v`**). **`post_install`** schedules **`open`** ~2s after Brew exits (`nohup`); log **`~/Library/Logs/Powermeter/brew-post-install-launch.log`**. **`brew uninstall`** removes logs, LaunchAgent, `~/.local/bin` copy, etc.
+Reinstall / upgrade: **`brew reinstall powermeter`** (not `reinstall --HEAD`; verbose: **`-v`**). **`post_install`** loads a **one-time `launchd` user agent** that runs **`open -n`** in the GUI session (see **`~/Library/Logs/Powermeter/brew-autostart-once.log`**). **`brew uninstall`** removes that plist, login plist, logs, `~/.local/bin` copies, etc.
 
 Formulas live under `Formula/`. Source: [Powermeter](https://github.com/avtomatization/powermeter).
 

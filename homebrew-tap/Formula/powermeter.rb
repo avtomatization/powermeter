@@ -15,40 +15,78 @@ class Powermeter < Formula
   def install
     system "swift", "build", "-c", "release", "--disable-sandbox"
     bin.install ".build/release/Powermeter"
-    # SwiftPM embeds resources (Localizable.strings) in this bundle next to the executable.
     bin.install ".build/release/Powermeter_Powermeter.bundle"
+
+    exe = (bin/"Powermeter").realpath.to_s
+    (libexec/"powermeter-brew-autostart-once.sh").write(<<~SH)
+      #!/bin/bash
+      # One-shot job: runs in the per-user GUI launchd domain so `open` can attach to WindowServer.
+      set -u
+      PLIST="${HOME}/Library/LaunchAgents/com.powermeter.brew-autostart-once.plist"
+      EXE=#{Shellwords.escape(exe)}
+      LOG="${HOME}/Library/Logs/Powermeter/brew-autostart-once.log"
+      mkdir -p "${HOME}/Library/Logs/Powermeter"
+      exec >>"${LOG}" 2>&1
+      echo "=== $(/bin/date) autostart-once EXE=${EXE} ==="
+      cleanup() {
+        /usr/bin/launchctl bootout "gui/$(id -u)" "${PLIST}" 2>/dev/null || true
+        /bin/rm -f "${PLIST}"
+        echo "=== $(/bin/date) removed one-shot plist ==="
+      }
+      trap cleanup EXIT
+      /usr/bin/pkill -x Powermeter 2>/dev/null || true
+      sleep 0.5
+      if /usr/bin/open -n "${EXE}"; then
+        echo "open -n ok"
+      else
+        echo "open -n failed, nohup fallback"
+        /usr/bin/nohup "${EXE}" </dev/null >/dev/null 2>&1 &
+      fi
+      sleep 2
+      /usr/bin/pgrep -lx Powermeter || echo "pgrep: Powermeter not running"
+    SH
+    (libexec/"powermeter-brew-autostart-once.sh").chmod(0o755)
   end
 
   def post_install
-    path = (bin/"Powermeter").realpath.to_s
-    return unless File.executable?(path)
+    wrapper = (libexec/"powermeter-brew-autostart-once.sh").realpath.to_s
+    return unless File.executable?(wrapper)
 
-    log = File.join(Dir.home, "Library/Logs/Powermeter", "brew-post-install-launch.log")
-    FileUtils.mkdir_p(File.dirname(log))
+    log_dir = File.join(Dir.home, "Library/Logs/Powermeter")
+    FileUtils.mkdir_p(log_dir)
+    out_log = File.join(log_dir, "brew-autostart-launchd-stdout.log")
+    err_log = File.join(log_dir, "brew-autostart-launchd-stderr.log")
+    plist_path = File.join(Dir.home, "Library/LaunchAgents/com.powermeter.brew-autostart-once.plist")
 
-    # Homebrew can tear down the install environment when `post_install` returns; starting
-    # immediately often fails to attach MenuBarExtra to WindowServer. Defer with `nohup` so
-    # pkill+`open`(1) run after Brew has fully exited.
-    ohai "Scheduling Powermeter to start ~2s after Homebrew finishes (log: #{log})"
-    path_q = Shellwords.escape(path)
-    log_q = Shellwords.escape(log)
-    log_dir_q = Shellwords.escape(File.dirname(log))
-    inner = [
-      "set -e",
-      "mkdir -p #{log_dir_q}",
-      "exec >>#{log_q} 2>&1",
-      "echo \"=== $(/bin/date) brew post_install launcher ===\"",
-      "sleep 2",
-      "/usr/bin/pkill -x Powermeter 2>/dev/null || true",
-      "sleep 0.6",
-      "if /usr/bin/open #{path_q}; then echo \"$(/bin/date) open ok\"; else echo \"$(/bin/date) open failed, nohup fallback\"; /usr/bin/nohup #{path_q} </dev/null >/dev/null 2>&1 & fi",
-      "sleep 0.5",
-      "if /usr/bin/pgrep -xq Powermeter; then echo \"$(/bin/date) pgrep: Powermeter running\"; else echo \"$(/bin/date) pgrep: Powermeter not running\"; fi",
-    ].join("; ")
+    plist_xml = <<~PLIST
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>com.powermeter.brew-autostart-once</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{wrapper}</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <false/>
+        <key>StandardOutPath</key>
+        <string>#{out_log}</string>
+        <key>StandardErrorPath</key>
+        <string>#{err_log}</string>
+      </dict>
+      </plist>
+    PLIST
 
-    # Outer `nohup … &` returns immediately so Brew does not wait on the GUI process tree.
-    unless system("/bin/bash", "-c", "nohup /bin/bash -c #{Shellwords.escape(inner)} </dev/null >/dev/null 2>&1 &")
-      opoo "Could not schedule Powermeter auto-start; run `Powermeter` from a terminal."
+    ohai "Starting Powermeter via a one-time user LaunchAgent (GUI session)…"
+    quiet_system "/bin/launchctl", "bootout", "gui/#{Process.uid}", plist_path if File.exist?(plist_path)
+    FileUtils.mkdir_p(File.dirname(plist_path))
+    File.write(plist_path, plist_xml)
+    unless system("/bin/launchctl", "bootstrap", "gui/#{Process.uid}", plist_path)
+      opoo "launchctl bootstrap failed; run `Powermeter` from Terminal."
     end
   rescue StandardError => e
     opoo "post_install: #{e}"
@@ -56,13 +94,16 @@ class Powermeter < Formula
   end
 
   def post_uninstall
+    once = "#{Dir.home}/Library/LaunchAgents/com.powermeter.brew-autostart-once.plist"
+    quiet_system "/bin/launchctl", "bootout", "gui/#{Process.uid}", once if File.exist?(once)
+    FileUtils.rm_f(once)
+
     plist = "#{Dir.home}/Library/LaunchAgents/com.powermeter.menu.plist"
     quiet_system "/bin/launchctl", "bootout", "gui/#{Process.uid}", plist if File.exist?(plist)
     FileUtils.rm_f(plist)
     quiet_system "/usr/bin/pkill", "-x", "Powermeter"
     log_dir = "#{Dir.home}/Library/Logs/Powermeter"
     FileUtils.rm_rf(log_dir)
-    # Avoid a second copy taking precedence in PATH over the Homebrew shim.
     local = "#{Dir.home}/.local/bin"
     FileUtils.rm_f("#{local}/Powermeter")
     FileUtils.rm_rf("#{local}/Powermeter_Powermeter.bundle")
@@ -75,12 +116,13 @@ class Powermeter < Formula
 
   def caveats
     <<~EOS
-      Powermeter is a menu bar-only app (no Dock icon). After `brew install`/`reinstall`, start is
-      scheduled ~2s later via `open`(1); see `~/Library/Logs/Powermeter/brew-post-install-launch.log` if the icon is missing.
-      You can always run `Powermeter` manually (check Privacy & Security if blocked).
-      Autostart at login: menu bar item → Settings → Open at login.
-      `brew uninstall powermeter` stops the app, removes the LaunchAgent plist, logs, and any copy in `~/.local/bin`.
-      Reinstall / rebuild: `brew reinstall powermeter` (do not pass `--HEAD` to `reinstall`; use `-v` for verbose).
+      Powermeter is a menu bar-only app (no Dock icon). After `brew install`/`reinstall`, a **one-time**
+      LaunchAgent (`com.powermeter.brew-autostart-once`) runs `open -n` in your GUI session, then removes itself.
+      Logs: `~/Library/Logs/Powermeter/brew-autostart-once.log` and `brew-autostart-launchd-*.log`.
+      If the icon is still missing, run `Powermeter` manually (Privacy & Security).
+      Autostart at login: menu bar → Settings → Open at login.
+      `brew uninstall` removes that one-shot plist, the regular login plist, logs, and `~/.local/bin` copies.
+      Reinstall: `brew reinstall powermeter` (no `--HEAD` on reinstall; `-v` for verbose).
     EOS
   end
 end
