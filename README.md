@@ -53,10 +53,10 @@ This repository includes a **Homebrew formula** at `Formula/powermeter.rb`. You 
 
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
-brew install powermeter
+brew install --HEAD powermeter
 ```
 
-- Builds the latest `main` from source (Swift release build; formula is **HEAD-only**).
+- Builds the latest `main` from source (Swift release build; formula is **HEAD-only**, so Homebrew requires **`--HEAD`**).
 - The binary is installed as `$(brew --prefix)/bin/Powermeter`.
 
 **Optional:** add the same LaunchAgent autostart as the shell installer (copy from `scripts/install.sh` or run that script after `brew install`).
@@ -90,7 +90,7 @@ The script copies `homebrew-tap/` into a temp git repo and pushes to **`git@gith
 
 ```bash
 brew tap avtomatization/tap
-brew install powermeter
+brew install --HEAD powermeter
 ```
 
 ## Update
@@ -222,14 +222,14 @@ bash scripts/install.sh
 
 ```bash
 brew tap avtomatization/powermeter https://github.com/avtomatization/powermeter.git
-brew install powermeter
+brew install --HEAD powermeter
 ```
 
 Короткий вариант без URL — репозиторий **`avtomatization/homebrew-tap`** (в этом репо есть зеркало **`homebrew-tap/`**; публикация: `bash scripts/push-homebrew-tap.sh` после создания пустого репо на GitHub). Установка:
 
 ```bash
 brew tap avtomatization/tap
-brew install powermeter
+brew install --HEAD powermeter
 ```
 
 Удаление:

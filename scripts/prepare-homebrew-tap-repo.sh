@@ -14,7 +14,7 @@ cat > "$DEST/README.md" << 'EOF'
 
 ```bash
 brew tap avtomatization/tap
-brew install powermeter
+brew install --HEAD powermeter
 ```
 
 Formulas live under `Formula/`. Source: [Powermeter](https://github.com/avtomatization/powermeter).

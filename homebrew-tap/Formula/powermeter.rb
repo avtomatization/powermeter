@@ -1,5 +1,6 @@
 # typed: false
 # frozen_string_literal: true
+# HEAD-only: brew install --HEAD powermeter (see README).
 
 class Powermeter < Formula
   desc "macOS menu bar live power (SMC PSTR), battery fallback"
